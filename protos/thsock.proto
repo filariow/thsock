@@ -1,0 +1,18 @@
+syntax = "proto3";
+package thgrpc;
+
+option optimize_for = LITE_RUNTIME;
+option go_package = "github.com/filariow/thsock/pkg/thprotos";
+
+// The Temperature-Service service definition.
+service TempHumSvc {
+    // Read Temperature and Humidity from sensor
+    rpc ReadTempHum (ReadTempHumRequest) returns (ReadTempHumReply) {}
+}
+
+message ReadTempHumRequest {}
+message ReadTempHumReply {
+    double Temperature = 1;
+    double Humidity = 2;
+}
+
