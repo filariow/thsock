@@ -7,7 +7,7 @@ GOOS := linux
 build:
 	GOOS=$(GOOS) \
 	GOARCH=$(GOARCH) \
-	CGO_ENABLED=0 \
+	CGO_ENABLED=1 \
 	$(GO) build \
 		-a \
 		-installsuffix cgo \
