@@ -5,7 +5,16 @@ GOOS := linux
 .PHONY: build protos
 
 build:
-	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/thsock cmd/usock/main.go
+	GOOS=$(GOOS) \
+	GOARCH=$(GOARCH) \
+	CGO_ENABLED=0 \
+	$(GO) build \
+		-a \
+		-installsuffix cgo \
+		-trimpath \
+		-ldflags="-s -w" \
+		-o bin/thsock  \
+		cmd/usock/main.go
 
 ci: build
 	scp bin/thsock rpi4:/home/pi/thsock
