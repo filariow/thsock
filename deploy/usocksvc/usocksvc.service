@@ -1,0 +1,9 @@
+[Unit]
+Description=Temperature Humidity socket service
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStart=thsock
+
+
