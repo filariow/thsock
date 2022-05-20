@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: thsampler
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: thsampler
+            image: unina/thlooper:dev
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+            - name:  thsocket
+              mountPath: /tmp/th.socket
+          restartPolicy: Never
+          volumes:
+          - name: thsocket
+            hostPath: 
+              path: /tmp/th.socket
+
