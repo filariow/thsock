@@ -4,7 +4,7 @@ GOOS := linux
 
 .PHONY: build protos
 
-build:
+build-srv:
 	GOOS=$(GOOS) \
 	GOARCH=$(GOARCH) \
 	CGO_ENABLED=1 \
@@ -16,8 +16,23 @@ build:
 		-o bin/thsock  \
 		cmd/usock/main.go
 
-ci: build
-	scp bin/thsock rpi4:/home/pi/thsock
+build-ctl:
+	GOOS=$(GOOS) \
+	GOARCH=$(GOARCH) \
+	CGO_ENABLED=0 \
+	$(GO) build \
+		-a \
+		-installsuffix cgo \
+		-trimpath \
+		-ldflags="-s -w" \
+		-o bin/thctl \
+		cmd/thctl/main.go
+
+ci-thl:
+	docker build -f deploy/thlooper/Dockerfile -t unina/thlooper:mqtt .
+	docker save --output /tmp/thlooper.mqtt.tar unina/thlooper:mqtt	
+	sudo k3s ctr images import /tmp/thlooper.mqtt.tar
+	sudo rm -f /tmp/thlooper.mqtt.tar
 
 protos:
 	mkdir -p pkg/thprotos
