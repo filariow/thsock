@@ -26,6 +26,7 @@ func (c *mqttClient) Publish(topic, message string) error {
 	opts.SetClientID(cfg.ClientID)
 	opts.SetUsername(cfg.Username)
 	opts.SetPassword(cfg.Password)
+	opts.SetProtocolVersion(4)
 
 	opts.OnConnect = func(client mqtt.Client) { log.Printf("MQTT Client to '%s' connected", cfg.Broker) }
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {

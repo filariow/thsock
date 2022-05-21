@@ -41,7 +41,7 @@ func run() error {
 
 	cfg, err := iothubmqtt.BuildConfigFromEnv("")
 	if err != nil {
-		return fmt.Errorf("error building configuration for IoTHub's MQTT Client")
+		return fmt.Errorf("error building configuration for IoTHub's MQTT Client: %w", err)
 	}
 
 	ihc := iothubmqtt.NewMQTTClient(cfg)
