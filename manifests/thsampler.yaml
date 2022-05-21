@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: thsampler
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: thsampler
+              image: unina/thlooper:mqtt
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: thsocket
+                  mountPath: /tmp/th.socket
+              envFrom:
+                - secretRef:
+                    name: iothub-password
+                - configMapRef:
+                    name: iothub-broker
+          restartPolicy: Never
+          volumes:
+            - name: thsocket
+              hostPath:
+                path: /tmp/th.socket
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iothub-broker
+  labels:
+    app: thsampler
+data:
+  IOT_USERNAME: iot-proge-lectures-unina-demo.azure-devices.net/rpi4/?api-version=2021-04-12
+  IOT_CLIENTID: rpi4
+  IOT_BROKER: iot-proge-lectures-unina-demo.azure-devices.net
+  IOT_PORT: "8883"
