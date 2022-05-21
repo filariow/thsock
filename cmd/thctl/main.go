@@ -56,7 +56,7 @@ func sendMessageToIoT(msg string) error {
 	if err := ihc.Publish(t, msg); err != nil {
 		return err
 	}
-	log.Println("Message '%s' sent to topic '%s'", msg, t)
+	log.Printf("Message '%s' sent to topic '%s'", msg, t)
 	return nil
 
 }
