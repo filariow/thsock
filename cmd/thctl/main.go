@@ -39,12 +39,24 @@ func run() error {
 	}
 	fmt.Printf("%s\n", b)
 
+	if err := sendMessageToIoT(string(b)); err != nil {
+		return fmt.Errorf("error sending message to IoT Hub: %w", err)
+	}
+	return nil
+}
+
+func sendMessageToIoT(msg string) error {
 	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
 	if err != nil {
-		return fmt.Errorf("error building configuration for IoTHub's MQTT Client: %w", err)
+		return fmt.Errorf("error building configuration for MQTT Client: %w", err)
 	}
 
 	ihc := iothubmqtt.NewMQTTClient(cfg)
-	err = ihc.Publish("garden/temphum", string(b))
-	return err
+	t := "garden/temphum"
+	if err := ihc.Publish(t, msg); err != nil {
+		return err
+	}
+	log.Println("Message '%s' sent to topic '%s'", msg, t)
+	return nil
+
 }
