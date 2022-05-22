@@ -27,11 +27,10 @@ func run() error {
 	}
 	log.Printf("Read data from sensor: '%s'\n", b)
 
-	m, t := string(b), "garden/temphum"
-	if err := sendMessageToIoT(t, m); err != nil {
+	m := string(b)
+	if err := sendMessageToIoT(m); err != nil {
 		return fmt.Errorf("error sending message to IoT Hub: %w", err)
 	}
-	log.Printf("Message '%s' sent to topic '%s'", m, t)
 
 	return nil
 }
@@ -56,15 +55,18 @@ func readSensor() ([]byte, error) {
 	return b, nil
 }
 
-func sendMessageToIoT(topic, msg string) error {
+func sendMessageToIoT(msg string) error {
 	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
 	if err != nil {
 		return fmt.Errorf("error building configuration for MQTT Client: %w", err)
 	}
 
+	t := fmt.Sprintf("devices/%s/messages/events/", cfg.ClientID)
 	ihc := iothubmqtt.NewMQTTClient(cfg)
-	if err := ihc.Publish(topic, msg); err != nil {
+	if err := ihc.Publish(t, msg); err != nil {
 		return err
 	}
+
+	log.Printf("Message '%s' sent to topic '%s'", msg, t)
 	return nil
 }

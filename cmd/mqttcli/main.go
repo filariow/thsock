@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/filariow/thsock/pkg/iothubmqtt"
 )
@@ -23,6 +24,8 @@ func run() error {
 
 	fmt.Printf("%+v\n", cfg)
 	ihc := iothubmqtt.NewMQTTClient(cfg)
-	err = ihc.Publish("garden/temphum", "hello")
+	time.Sleep(1 * time.Second)
+	err = ihc.Publish("devices/rpi4/messages/events/", "hello")
+	log.Println("Message sent")
 	return err
 }
