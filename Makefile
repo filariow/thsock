@@ -26,6 +26,12 @@ build-ctl:
 		-o bin/thctl \
 		cmd/thctl/main.go
 
+ci-ths:
+	docker build -f deploy/thsampler/Dockerfile -t unina/thsampler:mqtt .
+	docker save --output /tmp/thsampler.mqtt.tar unina/thsampler:mqtt	
+	sudo k3s ctr images import /tmp/thsampler.mqtt.tar
+	sudo rm -f /tmp/thsampler.mqtt.tar
+
 ci-thl:
 	docker build -f deploy/thlooper/Dockerfile -t unina/thlooper:mqtt .
 	docker save --output /tmp/thlooper.mqtt.tar unina/thlooper:mqtt	
