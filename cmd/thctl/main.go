@@ -63,13 +63,15 @@ func readSensor() ([]byte, error) {
 }
 
 func sendMessageToIoT(ctx context.Context, c ihbclient.IHBClient, data []byte) error {
+	a := c.Address()
+	log.Println("Sending data to IoT Hub broker at '%s'", a)
 
 	r, err := c.SendEvent(ctx, data)
 	if err != nil {
 		return err
 	}
 	if r.StatusCode > 299 {
-		return fmt.Errorf("Error sending message to IoTHub Broker. Response: %v", *r)
+		return fmt.Errorf("Error sending message to IoTHub Broker at '%s'. Response: %v", a, *r)
 	}
 
 	return nil

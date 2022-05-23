@@ -9,6 +9,8 @@ import (
 )
 
 type IHBClient interface {
+	Address() string
+
 	SendEvent(ctx context.Context, data []byte) (*http.Response, error)
 }
 
@@ -23,6 +25,10 @@ func NewClient(address string) (IHBClient, error) {
 
 type ihbClient struct {
 	address url.URL
+}
+
+func (c *ihbClient) Address() string {
+	return c.address.String()
 }
 
 type thmodel struct {
