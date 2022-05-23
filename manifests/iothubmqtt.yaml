@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iothubmqtt-deployment
+  labels:
+    app: iothubmqtt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iothubmqtt
+  template:
+    metadata:
+      labels:
+        app: iothubmqtt
+    spec:
+      containers:
+        - name: iothubmqtt
+          image: iothubmqtt:dev
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 200m
+              memory: 20M
+            limits:
+              cpu: 2000m
+              memory: 200M
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iothubmqtt-deployment
+spec:
+  selector:
+    app: iothubmqtt
+  ports:
+    - protocol: TCP
+      port: 80

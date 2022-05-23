@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iothub-broker
+  labels:
+    app: thsampler
+data:
+  IOT_USERNAME: iot-proge-lectures-unina-demo.azure-devices.net/rpi4/?api-version=2021-04-12
+  IOT_CLIENTID: rpi4
+  IOT_BROKER: iot-proge-lectures-unina-demo.azure-devices.net
+  IOT_PORT: "8883"
