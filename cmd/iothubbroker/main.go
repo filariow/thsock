@@ -19,7 +19,7 @@ func main() {
 
 func run() error {
 	log.Println("Configuring HTTP server")
-	http.HandleFunc("event", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/event", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			m := fmt.Sprintf("Expected method %s, found: %s", http.MethodPost, r.Method)
 			log.Println(m)
