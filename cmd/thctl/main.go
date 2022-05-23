@@ -28,8 +28,8 @@ func run() error {
 	}
 	log.Printf("Read data from sensor: '%s'\n", b)
 
-	m := string(b)
-	if err := sendMessageToIoT(m); err != nil {
+	ctx := context.Background()
+	if err := sendMessageToIoT(ctx, b); err != nil {
 		return fmt.Errorf("error sending message to IoT Hub: %w", err)
 	}
 
@@ -56,11 +56,11 @@ func readSensor() ([]byte, error) {
 	return b, nil
 }
 
-func sendMessageToIoT(data []byte) error {
+func sendMessageToIoT(ctx context.Context, data []byte) error {
 	a := os.Getenv("IOT_ADDRESS")
 	c := ihbclient.NewClient(a)
 
-	r, err := c.SendEvent(context.Background(), data)
+	r, err := c.SendEvent(ctx, data)
 	if err != nil {
 		return err
 	}
