@@ -21,8 +21,6 @@ build-ctl:
 	GOARCH=$(GOARCH) \
 	CGO_ENABLED=0 \
 	$(GO) build \
-		-a \
-		-installsuffix cgo \
 		-trimpath \
 		-ldflags="-s -w" \
 		-o bin/thctl \

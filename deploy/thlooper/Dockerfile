@@ -12,7 +12,7 @@ COPY "cmd/thctl" "cmd/thctl"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
 
-RUN CGO_ENABLED=0 go build -a -installsuffix cgo \
+RUN CGO_ENABLED=0 go build \
 	-trimpath \
 	-ldflags="-s -w" \
 	-o /tmp/thctl \

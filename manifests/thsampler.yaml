@@ -17,7 +17,7 @@ spec:
                   mountPath: /tmp/th.socket
               env:
                 - name: IOT_ADDRESS
-                  value: "iothubmqtt-deployment.default.svc.cluster.local"
+                  value: "http://iothubmqtt-deployment.default.svc.cluster.local:8080"
           restartPolicy: Never
           volumes:
             - name: thsocket
