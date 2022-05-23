@@ -8,6 +8,8 @@ import (
 )
 
 type MQTTClient interface {
+	Connect() error
+	IsConnected() bool
 	Publish(topic, message string) error
 }
 
@@ -17,9 +19,14 @@ func NewMQTTClient(config *Config) MQTTClient {
 
 type mqttClient struct {
 	config Config
+	client mqtt.Client
 }
 
-func (c *mqttClient) Publish(topic, message string) error {
+func (c *mqttClient) IsConnected() bool {
+	return c.client != nil
+}
+
+func (c *mqttClient) Connect() error {
 	cfg := c.config
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tls://%s:%d", cfg.Broker, cfg.Port))
@@ -28,7 +35,7 @@ func (c *mqttClient) Publish(topic, message string) error {
 	opts.SetPassword(cfg.Password)
 	opts.SetProtocolVersion(4)
 
-	opts.OnConnect = func(client mqtt.Client) { log.Printf("MQTT Client to '%s' connected", cfg.Broker) }
+	opts.OnConnect = func(client mqtt.Client) { log.Printf("MQTT Client connected to '%s'", cfg.Broker) }
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
 		log.Printf("MQTT Client lost connection to '%s': '%s'", cfg.Broker, err)
 	}
@@ -39,7 +46,11 @@ func (c *mqttClient) Publish(topic, message string) error {
 		return fmt.Errorf("Failed to connect: %w", token.Error())
 	}
 
-	token := client.Publish(topic, 0, false, message)
+	c.client = client
+}
+
+func (c *mqttClient) Publish(topic, message string) error {
+	token := c.client.Publish(topic, 0, false, message)
 	<-token.Done()
 	if token.Error() != nil {
 		return fmt.Errorf("Failed to publish to topic '%s': %w", topic, token.Error())

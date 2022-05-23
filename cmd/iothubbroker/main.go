@@ -18,13 +18,17 @@ func main() {
 }
 
 func run() error {
-	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
+	cfg, err := loadMQTTClientConfig()
 	if err != nil {
-		return fmt.Errorf("error building configuration for MQTT Client: %w", err)
+		return err
+	}
+
+	ihc, err := setupMQTTClient(cfg)
+	if err != nil {
+		return err
 	}
 
 	t := fmt.Sprintf("devices/%s/messages/events/", cfg.ClientID)
-	ihc := iothubmqtt.NewMQTTClient(cfg)
 
 	log.Println("Configuring HTTP server")
 	http.HandleFunc("/event", func(w http.ResponseWriter, r *http.Request) {
@@ -62,6 +66,24 @@ func run() error {
 	p := "8080"
 	log.Printf("Serving on port: %s", p)
 	return http.ListenAndServe(":"+p, nil)
+}
+
+func loadMQTTClientConfig() (*iothubmqtt.Config, error) {
+	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
+	if err != nil {
+		return nil, fmt.Errorf("error building configuration for MQTT Client: %w", err)
+	}
+	return cfg, nil
+}
+
+func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
+	ihc := iothubmqtt.NewMQTTClient(cfg)
+
+	if err := ihc.Connect(); err != nil {
+		return nil, err
+	}
+
+	return ihc, nil
 }
 
 func sendMessageToIoT(ihc iothubmqtt.MQTTClient, topic, msg string) error {
