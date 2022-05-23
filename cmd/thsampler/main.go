@@ -41,7 +41,9 @@ func run() error {
 			return fmt.Errorf("error sending message to IoT Hub: %w", err)
 		}
 
-		time.Sleep(5 * time.Second)
+		st := 5
+		fmt.Printf("Sleeping %d seconds...", st)
+		time.Sleep(time.Duration(st) * time.Second)
 	}
 }
 
@@ -77,6 +79,6 @@ func sendMessageToIoT(ctx context.Context, c ihbclient.IHBClient, data []byte) e
 		return fmt.Errorf("Error sending message to IoTHub Broker at '%s'. Response: %v", a, *r)
 	}
 
-	log.Printf("Data sent, successful response: %v", *r)
+	log.Println("Data sent successfully")
 	return nil
 }
