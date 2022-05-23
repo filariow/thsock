@@ -47,6 +47,7 @@ func (c *mqttClient) Connect() error {
 	}
 
 	c.client = client
+	return nil
 }
 
 func (c *mqttClient) Publish(topic, message string) error {
