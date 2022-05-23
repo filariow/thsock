@@ -17,6 +17,7 @@ spec:
       containers:
         - name: iothubmqtt
           image: iothubmqtt:dev
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           resources:
