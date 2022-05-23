@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"context"
 
-	"github.com/filariow/thsock/pkg/iothubmqtt"
+	"github.com/filariow/thsock/pkg/ihbclient"
 	"github.com/filariow/thsock/pkg/thprotos"
 	"google.golang.org/grpc"
 )
@@ -55,18 +56,17 @@ func readSensor() ([]byte, error) {
 	return b, nil
 }
 
-func sendMessageToIoT(msg string) error {
-	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
-	if err != nil {
-		return fmt.Errorf("error building configuration for MQTT Client: %w", err)
-	}
+func sendMessageToIoT(data []byte) error {
+	a := os.Getenv("IOT_ADDRESS")
+	c := ihbclient.NewClient(a)
 
-	t := fmt.Sprintf("devices/%s/messages/events/", cfg.ClientID)
-	ihc := iothubmqtt.NewMQTTClient(cfg)
-	if err := ihc.Publish(t, msg); err != nil {
+	r, err := c.SendEvent(context.Background(), data)
+	if err != nil {
 		return err
 	}
+	if r.StatusCode > 299 {
+		return fmt.Errorf("Error sending message to IoTHub Broker at '%s'. Response: %v", a, *r)
+	}
 
-	log.Printf("Message '%s' sent to topic '%s'", msg, t)
 	return nil
 }
