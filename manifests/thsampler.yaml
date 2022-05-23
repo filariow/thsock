@@ -15,11 +15,9 @@ spec:
               volumeMounts:
                 - name: thsocket
                   mountPath: /tmp/th.socket
-              envFrom:
-                - secretRef:
-                    name: iothub-password
-                - configMapRef:
-                    name: iothub-broker
+          env:
+            - name: IOT_ADDRESS
+              value: "iothubmqtt-deployment.default.svc.cluster.local"
           restartPolicy: Never
           volumes:
             - name: thsocket
