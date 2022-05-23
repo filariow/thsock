@@ -2,7 +2,7 @@ GO := go
 GOARCH := arm
 GOOS := linux
 
-.PHONY: build protos
+.PHONY: protos ci-thl ci-ihm build-ctl build-srv
 
 build-srv:
 	GOOS=$(GOOS) \
@@ -33,6 +33,12 @@ ci-thl:
 	docker save --output /tmp/thlooper.mqtt.tar unina/thlooper:mqtt	
 	sudo k3s ctr images import /tmp/thlooper.mqtt.tar
 	sudo rm -f /tmp/thlooper.mqtt.tar
+
+ci-ihm:
+	docker build -f deploy/iothubbroker/Dockerfile -t unina/iothubmqtt:dev .
+	docker save --output /tmp/iothubmqtt.dev.tar unina/iothubmqtt:dev
+	sudo k3s ctr images import /tmp/iothubmqtt.dev.tar
+	sudo rm -f /tmp/iothubmqtt.dev.tar
 
 protos:
 	mkdir -p pkg/thprotos
