@@ -5,19 +5,24 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"path"
+	"net/url"
 )
 
 type IHBClient interface {
 	SendEvent(ctx context.Context, data []byte) (*http.Response, error)
 }
 
-func NewClient(address string) IHBClient {
-	return &ihbClient{address: address}
+func NewClient(address string) (IHBClient, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ihbClient{address: *u}, err
 }
 
 type ihbClient struct {
-	address string
+	address url.URL
 }
 
 type thmodel struct {
@@ -26,8 +31,10 @@ type thmodel struct {
 }
 
 func (c *ihbClient) SendEvent(ctx context.Context, data []byte) (*http.Response, error) {
-	u := path.Join(c.address, "event")
+	a := c.address
+	a.Path = "/event"
 
+	u := a.String()
 	br := bytes.NewReader(data)
 	rq, err := http.NewRequestWithContext(ctx, http.MethodPost, u, br)
 	if err != nil {
@@ -36,7 +43,7 @@ func (c *ihbClient) SendEvent(ctx context.Context, data []byte) (*http.Response,
 
 	r, err := http.DefaultClient.Do(rq)
 	if err != nil {
-		return nil, fmt.Errorf("error sending event to '%s': %w", c.address, err)
+		return nil, fmt.Errorf("error sending event to '%s': %w", u, err)
 	}
 
 	return r, nil
