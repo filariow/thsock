@@ -2,7 +2,7 @@ GO := go
 GOARCH := arm
 GOOS := linux
 
-.PHONY: protos ci-thl ci-ihm build-ctl build-srv
+.PHONY: protos ci-thctl ci-thlooper ci-ihm build-ctl build-srv
 
 build-srv:
 	GOOS=$(GOOS) \
@@ -26,17 +26,17 @@ build-ctl:
 		-o bin/thctl \
 		cmd/thctl/main.go
 
-ci-ths:
-	docker build -f deploy/thsampler/Dockerfile -t unina/thsampler:dev .
-	docker save --output /tmp/thsampler.dev.tar unina/thsampler:dev
-	sudo k3s ctr images import /tmp/thsampler.dev.tar
-	sudo rm -f /tmp/thsampler.dev.tar
+ci-thctl:
+	docker build -f deploy/thctl/Dockerfile -t unina/thctl:dev .
+	docker save --output /tmp/thctl.dev.tar unina/thctl:dev
+	sudo k3s ctr images import /tmp/thctl.dev.tar
+	sudo rm -f /tmp/thctl.dev.tar
 
-ci-thl:
-	docker build -f deploy/thlooper/Dockerfile -t unina/thlooper:mqtt .
-	docker save --output /tmp/thlooper.mqtt.tar unina/thlooper:mqtt	
-	sudo k3s ctr images import /tmp/thlooper.mqtt.tar
-	sudo rm -f /tmp/thlooper.mqtt.tar
+ci-thlooper:
+	docker build -f deploy/thlooper/Dockerfile -t unina/thlooper:dev .
+	docker save --output /tmp/thlooper.dev.tar unina/thlooper:dev	
+	sudo k3s ctr images import /tmp/thlooper.dev.tar
+	sudo rm -f /tmp/thlooper.dev.tar
 
 ci-ihm:
 	docker build -f deploy/iothubbroker/Dockerfile -t unina/iothubmqtt:dev .
