@@ -74,5 +74,6 @@ func sendMessageToIoT(ctx context.Context, c ihbclient.IHBClient, data []byte) e
 		return fmt.Errorf("Error sending message to IoTHub Broker at '%s'. Response: %v", a, *r)
 	}
 
+	log.Printf("Data sent, successful response: %v", *r)
 	return nil
 }
