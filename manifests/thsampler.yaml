@@ -1,25 +1,38 @@
-apiVersion: batch/v1
-kind: CronJob
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: thsampler
+  name: thlooper-deployment
+  labels:
+    app: thlooper
 spec:
-  schedule: "* * * * *"
-  jobTemplate:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thlooper
+  template:
+    metadata:
+      labels:
+        app: thlooper
     spec:
-      template:
-        spec:
-          containers:
-            - name: thsampler
-              image: unina/thlooper:mqtt
-              imagePullPolicy: IfNotPresent
-              volumeMounts:
-                - name: thsocket
-                  mountPath: /tmp/th.socket
-              env:
-                - name: IOT_ADDRESS
-                  value: "http://iothubmqtt-deployment.default.svc.cluster.local:8080"
-          restartPolicy: Never
-          volumes:
+      containers:
+        - name: thlooper
+          image: unina/thlooper:dev
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 200m
+              memory: 20M
+            limits:
+              cpu: 2000m
+              memory: 200M
+          volumeMounts:
             - name: thsocket
-              hostPath:
-                path: /tmp/th.socket
+              mountPath: /tmp/th.socket
+          env:
+            - name: IOT_ADDRESS
+              value: "http://iothubmqtt-deployment.default.svc.cluster.local:8080"
+      restartPolicy: Never
+      volumes:
+        - name: thsocket
+          hostPath:
+             path: /tmp/th.socket
