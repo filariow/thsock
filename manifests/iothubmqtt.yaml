@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: iothubmqtt
-          image: iothubmqtt:dev
+          image: unina/iothubmqtt:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
