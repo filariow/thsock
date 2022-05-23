@@ -2,7 +2,7 @@ GO := go
 GOARCH := arm
 GOOS := linux
 
-.PHONY: protos ci-thctl ci-thlooper ci-ihm build-ctl build-srv
+.PHONY: protos ci-thsampler ci-thlooper ci-ihm build-ctl build-srv
 
 build-srv:
 	GOOS=$(GOOS) \
@@ -23,14 +23,14 @@ build-ctl:
 	$(GO) build \
 		-trimpath \
 		-ldflags="-s -w" \
-		-o bin/thctl \
-		cmd/thctl/main.go
+		-o bin/thsampler \
+		cmd/thsampler/main.go
 
-ci-thctl:
-	docker build -f deploy/thctl/Dockerfile -t unina/thctl:dev .
-	docker save --output /tmp/thctl.dev.tar unina/thctl:dev
-	sudo k3s ctr images import /tmp/thctl.dev.tar
-	sudo rm -f /tmp/thctl.dev.tar
+ci-thsampler:
+	docker build -f deploy/thsampler/Dockerfile -t unina/thsampler:dev .
+	docker save --output /tmp/thsampler.dev.tar unina/thsampler:dev
+	sudo k3s ctr images import /tmp/thsampler.dev.tar
+	sudo rm -f /tmp/thsampler.dev.tar
 
 ci-thlooper:
 	docker build -f deploy/thlooper/Dockerfile -t unina/thlooper:dev .

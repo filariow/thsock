@@ -10,7 +10,7 @@
 #         spec:
 #           containers:
 #             - name: thsampler
-#               image: unina/thctl:mqtt
+#               image: unina/thsampler:mqtt
 #               imagePullPolicy: IfNotPresent
 #               volumeMounts:
 #                 - name: thsocket
