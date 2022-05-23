@@ -18,6 +18,14 @@ func main() {
 }
 
 func run() error {
+	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
+	if err != nil {
+		return fmt.Errorf("error building configuration for MQTT Client: %w", err)
+	}
+
+	t := fmt.Sprintf("devices/%s/messages/events/", cfg.ClientID)
+	ihc := iothubmqtt.NewMQTTClient(cfg)
+
 	log.Println("Configuring HTTP server")
 	http.HandleFunc("/event", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -39,7 +47,7 @@ func run() error {
 			return
 		}
 
-		if err := sendMessageToIoT(string(b)); err != nil {
+		if err := sendMessageToIoT(ihc, t, string(b)); err != nil {
 			m := fmt.Sprintf("error sending message to IoT Hub: %s", err)
 			log.Println(m)
 
@@ -56,18 +64,11 @@ func run() error {
 	return http.ListenAndServe(":"+p, nil)
 }
 
-func sendMessageToIoT(msg string) error {
-	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
-	if err != nil {
-		return fmt.Errorf("error building configuration for MQTT Client: %w", err)
-	}
-
-	t := fmt.Sprintf("devices/%s/messages/events/", cfg.ClientID)
-	ihc := iothubmqtt.NewMQTTClient(cfg)
-	if err := ihc.Publish(t, msg); err != nil {
+func sendMessageToIoT(ihc iothubmqtt.MQTTClient, topic, msg string) error {
+	if err := ihc.Publish(topic, msg); err != nil {
 		return err
 	}
 
-	log.Printf("Message '%s' sent to topic '%s'", msg, t)
+	log.Printf("Message '%s' sent to topic '%s'", msg, topic)
 	return nil
 }
