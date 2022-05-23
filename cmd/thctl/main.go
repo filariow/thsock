@@ -69,7 +69,7 @@ func sendMessageToIoT(ctx context.Context, c ihbclient.IHBClient, data []byte) e
 		return err
 	}
 	if r.StatusCode > 299 {
-		return fmt.Errorf("Error sending message to IoTHub Broker at '%s'. Response: %v", a, *r)
+		return fmt.Errorf("Error sending message to IoTHub Broker. Response: %v", *r)
 	}
 
 	return nil
