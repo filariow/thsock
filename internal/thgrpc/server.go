@@ -32,7 +32,7 @@ func (s *thGrpcServer) ReadTempHum(_ context.Context, _ *thprotos.ReadTempHumReq
 	temperature, humidity, retried, err :=
 		dht.ReadDHTxxWithRetry(sensorType, pin, false, 10)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	// print temperature and humidity
 	log.Printf("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
