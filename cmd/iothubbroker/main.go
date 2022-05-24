@@ -28,7 +28,7 @@ func run() error {
 		return err
 	}
 
-	t := fmt.Sprintf("devices/%s/messages/events/", cfg.ClientID)
+	t := fmt.Sprintf("devices/%s/messages/events/$.ct=application%%2Fjson&$.ce=utf-8", cfg.ClientID)
 
 	log.Println("Configuring HTTP server")
 	http.HandleFunc("/event", func(w http.ResponseWriter, r *http.Request) {
