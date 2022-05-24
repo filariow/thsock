@@ -18,6 +18,7 @@ build-srv:
 
 ci-build-srv:
 	docker run --rm -it -v $(realpath .):/workspace -w /workspace  golang:1.18 make build-srv
+	sudo install ./bin/thsock /usr/local/bin/thsock 
 
 build-ctl:
 	GOOS=$(GOOS) \
