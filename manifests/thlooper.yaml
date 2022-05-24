@@ -31,7 +31,7 @@ spec:
           env:
             - name: IOT_ADDRESS
               value: "http://iothubmqtt-deployment.default.svc.cluster.local:8080"
-      restartPolicy: Never
+      restartPolicy: Always
       volumes:
         - name: thsocket
           hostPath:
