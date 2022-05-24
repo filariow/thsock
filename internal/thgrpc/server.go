@@ -3,6 +3,7 @@ package thgrpc
 import (
 	"context"
 	"log"
+	"sync"
 
 	"github.com/filariow/go-dht"
 	"github.com/filariow/thsock/pkg/thprotos"
@@ -13,6 +14,8 @@ func New() thprotos.TempHumSvcServer {
 }
 
 type thGrpcServer struct {
+	sensor sync.Mutex
+
 	thprotos.UnimplementedTempHumSvcServer
 }
 
@@ -24,6 +27,8 @@ func (s *thGrpcServer) ReadTempHum(_ context.Context, _ *thprotos.ReadTempHumReq
 	sensorType := dht.DHT12
 	// Read DHT11 sensor data from specific pin, retrying 10 times in case of failure.
 	pin := 17
+	s.sensor.Lock()
+	defer s.sensor.Unlock()
 	temperature, humidity, retried, err :=
 		dht.ReadDHTxxWithRetry(sensorType, pin, false, 10)
 	if err != nil {
