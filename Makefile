@@ -16,6 +16,9 @@ build-srv:
 		-o bin/thsock  \
 		cmd/usock/main.go
 
+ci-build-srv:
+	docker run --rm -it -v $(realpath .):/workspace -w /workspace  golang:1.18 make build-srv
+
 build-ctl:
 	GOOS=$(GOOS) \
 	GOARCH=$(GOARCH) \
