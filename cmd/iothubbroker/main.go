@@ -175,10 +175,10 @@ func parseTopic(topic string) (*directMethodData, error) {
 		return nil, err
 	}
 	mm := re.FindSubmatch([]byte(topic))
-	if len(mm) != 3 {
-		return nil, fmt.Errorf("expected 3 matches from topic '%s' and regexp '%s', found %d", topic, rg, len(mm))
+	if exp := 4; len(mm) != exp {
+		return nil, fmt.Errorf("expected %d matches from topic '%s' and regexp '%s', found %d", exp, topic, rg, len(mm))
 	}
-	svc, meth, rid := mm[0], mm[1], mm[2]
+	svc, meth, rid := mm[1], mm[2], mm[3]
 	return &directMethodData{
 		service: string(svc),
 		method:  string(meth),
