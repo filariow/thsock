@@ -31,8 +31,7 @@ type SetDelayData struct {
 }
 
 func startHTTPServer(ctx context.Context) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/setDelay", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/setDelay", func(w http.ResponseWriter, r *http.Request) {
 		bs, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(400)
@@ -58,12 +57,7 @@ func startHTTPServer(ctx context.Context) {
 		w.Write([]byte(fmt.Sprintf(`{"message": "delay set to %d"}`, delay)))
 		return
 	})
-	srv := http.Server{Addr: "8080", Handler: mux}
-	go func() {
-		<-ctx.Done()
-		srv.Close()
-	}()
-	srv.ListenAndServe()
+	http.ListenAndServe(":8080", nil)
 }
 
 func run() error {
@@ -88,9 +82,8 @@ func run() error {
 			return fmt.Errorf("error sending message to IoT Hub: %w", err)
 		}
 
-		st := 5
-		fmt.Printf("Sleeping %d seconds...", st)
-		time.Sleep(time.Duration(st) * time.Second)
+		fmt.Printf("Sleeping %d milliseconds...", delay)
+		time.Sleep(time.Duration(delay) * time.Millisecond)
 	}
 }
 
