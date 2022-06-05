@@ -33,6 +33,11 @@ spec:
           env:
             - name: IOT_ADDRESS
               value: "http://iothubmqtt.default.svc.cluster.local:8080"
+          envFrom:
+            - secretRef:
+                name: iothub-password
+            - configMapRef:
+                name: iothub-broker
       restartPolicy: Always
       volumes:
         - name: thsocket
