@@ -34,6 +34,13 @@ type SetDelayData struct {
 
 func startHTTPServer(ctx context.Context) {
 	http.HandleFunc("/setDelay", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Processing request to change sampling delay")
+		if r.Method != http.MethodPost {
+			w.WriteHeader(405)
+			w.Write([]byte(fmt.Sprintf(`{"error": "method '%s' not supported, use POST"}`, r.Method)))
+			return
+		}
+
 		bs, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(400)
@@ -54,6 +61,7 @@ func startHTTPServer(ctx context.Context) {
 			return
 		}
 
+		log.Printf("Setting delay time to %d ms", data.Delay)
 		delayMux.Lock()
 		delay = data.Delay
 		delayMux.Unlock()
@@ -91,7 +99,7 @@ func run() error {
 		d := delay
 		delayMux.RUnlock()
 
-		fmt.Printf("Sleeping %d milliseconds...", d)
+		log.Printf("Sleeping %d milliseconds...", d)
 		time.Sleep(time.Duration(d) * time.Millisecond)
 	}
 }
