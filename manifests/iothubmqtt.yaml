@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iothubmqtt-deployment
+  name: iothubmqtt
   labels:
     app: iothubmqtt
 spec:
@@ -36,7 +36,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: iothubmqtt-deployment
+  name: iothubmqtt
 spec:
   selector:
     app: iothubmqtt
