@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"regexp"
 	"sync"
@@ -35,56 +33,12 @@ type SetDelayData struct {
 	Delay int `json:"delay"`
 }
 
-func startHTTPServer(ctx context.Context) {
-	http.HandleFunc("/setDelay", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Processing request to change sampling delay")
-		if r.Method != http.MethodPost {
-			w.WriteHeader(405)
-			w.Write([]byte(fmt.Sprintf(`{"error": "method '%s' not supported, use POST"}`, r.Method)))
-			return
-		}
-
-		bs, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(400)
-			w.Write([]byte(fmt.Sprintf(`{"error": "request body not valid: %s"}`, err.Error())))
-			return
-		}
-
-		var data SetDelayData
-		if err := json.Unmarshal(bs, &data); err != nil {
-			w.WriteHeader(400)
-			w.Write([]byte(fmt.Sprintf(`{"error": "request body not valid: %s"}`, err.Error())))
-			return
-		}
-
-		if minDelay := 1000; data.Delay <= minDelay {
-			w.WriteHeader(400)
-			w.Write([]byte(fmt.Sprintf(`{"error": "delay must be bigger than %d"}`, minDelay)))
-			return
-		}
-
-		log.Printf("Setting delay time to %d ms", data.Delay)
-		delayMux.Lock()
-		delay = data.Delay
-		delayMux.Unlock()
-
-		w.WriteHeader(200)
-		w.Write([]byte(fmt.Sprintf(`{"message": "delay set to %d"}`, delay)))
-		return
-	})
-	http.ListenAndServe(":8080", nil)
-}
-
 func run() error {
 	a := os.Getenv("IOT_ADDRESS")
 	c, err := ihbclient.NewClient(a)
 	if err != nil {
 		return fmt.Errorf("error creating client for IoT Hub Broker: %w", err)
 	}
-
-	ctx := context.Background()
-	go startHTTPServer(ctx)
 
 	for {
 		b, err := readSensor()
