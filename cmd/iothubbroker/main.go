@@ -90,6 +90,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 		log.Printf("Message received '%d' on topic %s: %s", m.MessageID(), m.Topic(), m.Payload())
 		m.Ack()
 		log.Printf("Acked message %d", m.MessageID())
+		tr := fmt.Sprintf("$iothub/methods/res/200/?$rid=%d", m.MessageID())
 	})
 	<-tkn.Done()
 	if err := tkn.Error(); err != nil {
