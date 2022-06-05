@@ -84,6 +84,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 		return nil, err
 	}
 
+	log.Println("subscribing to topic stop-sampling")
 	ihc.Subscribe("$iothub/methods/POST/stop-sampling/", 0, func(c mqtt.Client, m mqtt.Message) {
 		log.Printf("message received %d on topic %s: %s", m.MessageID(), m.Topic(), m.Payload())
 		m.Ack()
