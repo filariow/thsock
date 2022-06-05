@@ -121,6 +121,8 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 				log.Println("message paylod for desired properties notification is empty, skipping.")
 				return
 			}
+
+			log.Println(string(m.Payload()))
 		})
 
 		<-tkn.Done()
