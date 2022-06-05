@@ -11,6 +11,8 @@ type MQTTClient interface {
 	Connect() error
 	IsConnected() bool
 	Publish(topic, message string) error
+
+	Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token
 }
 
 func NewMQTTClient(config *Config) MQTTClient {
@@ -57,4 +59,8 @@ func (c *mqttClient) Publish(topic, message string) error {
 		return fmt.Errorf("Failed to publish to topic '%s': %w", topic, token.Error())
 	}
 	return nil
+}
+
+func (c *mqttClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {
+	return c.client.Subscribe(topic, qos, callback)
 }

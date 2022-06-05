@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/filariow/thsock/pkg/iothubmqtt"
 )
 
@@ -82,6 +83,11 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 	if err := ihc.Connect(); err != nil {
 		return nil, err
 	}
+
+	ihc.Subscribe("$iothub/methods/POST/stop-sampling/", 0, func(c mqtt.Client, m mqtt.Message) {
+		log.Printf("message received %d on topic %s: %s", m.MessageID(), m.Topic(), m.Payload())
+		m.Ack()
+	})
 
 	return ihc, nil
 }
