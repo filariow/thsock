@@ -186,7 +186,7 @@ func parseTopic(topic string) (*directMethodData, error) {
 	}
 	svc, meth, rid := mm[1], mm[2], mm[3]
 	return &directMethodData{
-		service: string(svc),
+		service: string(svc) + ":8080",
 		method:  string(meth),
 		rid:     string(rid),
 	}, nil
