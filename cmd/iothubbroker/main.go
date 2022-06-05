@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -122,7 +123,25 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 				return
 			}
 
-			log.Println(string(m.Payload()))
+			log.Printf("desired properties payload: %s", m.Payload())
+			var data ReportedPropertiesData
+			if err := json.Unmarshal(m.Payload(), &data); err != nil {
+				log.Printf("error unmarshaling desired properties json: %s", err)
+				return
+			}
+
+			if data.THLooper != nil && data.THLooper.Delay != nil {
+				r, err := http.Post(
+					"http://thlooper.default.svc.cluster.local:8080/setDelay",
+					"application/json",
+					strings.NewReader(fmt.Sprintf(`{"delay": %d}`, data.THLooper.Delay)))
+				if err != nil {
+					log.Printf("error sending setDelay request to thlooper: %s", err)
+					return
+				}
+
+				log.Printf("thlooper setDelay responded with %d", r.StatusCode)
+			}
 		})
 
 		<-tkn.Done()
@@ -139,6 +158,12 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 	}
 
 	return ihc, nil
+}
+
+type ReportedPropertiesData struct {
+	THLooper *struct {
+		Delay *string `json:"delay"`
+	} `json:"thlooper"`
 }
 
 func respondToDirectMethodExecution(c mqtt.Client, rid string, status int, payload string) {
