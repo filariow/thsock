@@ -162,7 +162,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 
 type ReportedPropertiesData struct {
 	THLooper *struct {
-		Delay *string `json:"delay"`
+		Delay *int `json:"delay"`
 	} `json:"thlooper"`
 }
 
