@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thlooper-config
+  labels:
+    app: thlooper
+data:
+  IOT_USERNAME: iot-proge-lectures-unina-demo.azure-devices.net/rpi4/thlooper/?api-version=2021-04-12
+  IOT_CLIENTID: rpi4/thlooper
+  IOT_BROKER: iot-proge-lectures-unina-demo.azure-devices.net
+  IOT_PORT: "8883"
