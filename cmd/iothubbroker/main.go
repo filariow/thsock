@@ -149,7 +149,7 @@ func executeDirectMethod(topic, payload string) (*directMethodResponse, error) {
 		return &directMethodResponse{
 			rid:        m.rid,
 			statusCode: 500,
-			err:        err,
+			payload:    io.NopCloser(strings.NewReader(fmt.Sprintf(`{"error": "%s"}`, err))),
 		}, nil
 	}
 
@@ -157,7 +157,6 @@ func executeDirectMethod(topic, payload string) (*directMethodResponse, error) {
 		rid:        m.rid,
 		statusCode: r.StatusCode,
 		payload:    r.Body,
-		err:        nil,
 	}, nil
 }
 
@@ -165,7 +164,6 @@ type directMethodResponse struct {
 	rid        string
 	statusCode int
 	payload    io.ReadCloser
-	err        error
 }
 
 type directMethodData struct {
