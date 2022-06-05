@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
+	"regexp"
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -90,16 +93,20 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 		tkn := ihc.Subscribe(td, 0, func(c mqtt.Client, m mqtt.Message) {
 			log.Printf("Message received '%d' on topic %s: %s", m.MessageID(), m.Topic(), m.Payload())
 
-			rid := strings.Split(m.Topic(), "=")[1]
-			tr := fmt.Sprintf("$iothub/methods/res/200/?$rid=%s", rid)
-			log.Printf("Responding to message %d on topic '%s'", m.MessageID(), tr)
-			st := c.Publish(tr, 0, false, `{"status":"ok"}`)
-			<-st.Done()
-			if err := st.Error(); err != nil {
-				log.Println(err)
+			r, err := executeDirectMethod(m.Topic(), string(m.Payload()))
+			if err != nil {
+				log.Println("error executing direct method: %s", err)
+				respondToDirectMethodExecution(c, r.rid, 500, fmt.Sprintf(`{"error": "%s"}`, err.Error()))
 				return
 			}
-			log.Printf("Response sent on topic %s", tr)
+
+			p, err := ioutil.ReadAll(r.payload)
+			if err != nil {
+				log.Println("error reading payload from service response to request with rid %d", r.rid)
+				respondToDirectMethodExecution(c, r.rid, 500, fmt.Sprintf(`{"error": "%s"}`, err.Error()))
+				return
+			}
+			respondToDirectMethodExecution(c, r.rid, r.statusCode, string(p))
 		})
 		<-tkn.Done()
 		if err := tkn.Error(); err != nil {
@@ -111,6 +118,72 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 	}
 
 	return ihc, nil
+}
+
+func respondToDirectMethodExecution(c mqtt.Client, rid string, status int, payload string) {
+	tr := fmt.Sprintf("$iothub/methods/res/%d/?$rid=%s", status, rid)
+	log.Printf("Responding to message on topic '%s'", tr)
+	st := c.Publish(tr, 0, false, payload)
+	<-st.Done()
+	if err := st.Error(); err != nil {
+		log.Println(err)
+	}
+	log.Printf("Response sent on topic %s", tr)
+}
+
+func executeDirectMethod(topic, payload string) (*directMethodResponse, error) {
+	m, err := parseTopic(topic)
+	if err != nil {
+		return nil, err
+	}
+
+	u := path.Join(m.service, m.method)
+	r, err := http.Post(u, "application/json", strings.NewReader(payload))
+	if err != nil {
+		return &directMethodResponse{
+			rid:        m.rid,
+			statusCode: 500,
+			err:        err,
+		}, nil
+	}
+
+	return &directMethodResponse{
+		rid:        m.rid,
+		statusCode: r.StatusCode,
+		payload:    r.Body,
+		err:        nil,
+	}, nil
+}
+
+type directMethodResponse struct {
+	rid        string
+	statusCode int
+	payload    io.ReadCloser
+	err        error
+}
+
+type directMethodData struct {
+	service string
+	method  string
+	rid     string
+}
+
+func parseTopic(topic string) (*directMethodData, error) {
+	rg := `^\$iothub\/methods\/POST\/([A-z]+)_([A-z]+)\/\?\$rid=([0-9]*)$`
+	re, err := regexp.Compile(rg)
+	if err != nil {
+		return nil, err
+	}
+	mm := re.FindSubmatch([]byte(topic))
+	if len(mm) != 3 {
+		return nil, fmt.Errorf("expected 3 matches from topic '%s' and regexp '%s', found %d", topic, rg, len(mm))
+	}
+	svc, meth, rid := mm[0], mm[1], mm[2]
+	return &directMethodData{
+		service: string(svc),
+		method:  string(meth),
+		rid:     string(rid),
+	}, nil
 }
 
 func sendMessageToIoT(ihc iothubmqtt.MQTTClient, topic, msg string) error {
