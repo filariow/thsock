@@ -83,6 +83,8 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 
 	ihc.Configure()
 	ihc.OnConnect(func(c mqtt.Client) {
+		log.Println("MQTT Client connect")
+
 		td := "$iothub/methods/POST/#"
 		log.Printf("Subscribing to direct method topic: %s", td)
 		tkn := ihc.Subscribe(td, 0, func(c mqtt.Client, m mqtt.Message) {
