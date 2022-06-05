@@ -116,7 +116,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 			respondToDirectMethodExecution(c, r.rid, r.statusCode, string(p))
 		})
 		tkn2 := ihc.Subscribe("$iothub/twin/PATCH/properties/desired/#", 0, func(c mqtt.Client, m mqtt.Message) {
-			log.Println("processing message for desired properties")
+			log.Printf("processing message from topic '%s' for desired properties", m.Topic())
 
 			if m.Payload() == nil {
 				log.Println("message paylod for desired properties notification is empty, skipping.")
