@@ -100,12 +100,18 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 				return
 			}
 
+			if r.payload == nil {
+				respondToDirectMethodExecution(c, r.rid, r.statusCode, "")
+				return
+			}
+
 			p, err := ioutil.ReadAll(r.payload)
 			if err != nil {
 				log.Println("error reading payload from service response to request with rid %d", r.rid)
 				respondToDirectMethodExecution(c, r.rid, 500, fmt.Sprintf(`{"error": "%s"}`, err.Error()))
 				return
 			}
+
 			respondToDirectMethodExecution(c, r.rid, r.statusCode, string(p))
 		})
 		<-tkn.Done()
