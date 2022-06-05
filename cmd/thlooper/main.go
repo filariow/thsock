@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"context"
@@ -18,6 +19,7 @@ import (
 
 const SockAddr = "unix:/tmp/th.socket"
 
+var delayMux sync.RWMutex
 var delay = 5000
 
 func main() {
@@ -52,7 +54,10 @@ func startHTTPServer(ctx context.Context) {
 			return
 		}
 
+		delayMux.Lock()
 		delay = data.Delay
+		delayMux.Unlock()
+
 		w.WriteHeader(200)
 		w.Write([]byte(fmt.Sprintf(`{"message": "delay set to %d"}`, delay)))
 		return
@@ -82,8 +87,12 @@ func run() error {
 			return fmt.Errorf("error sending message to IoT Hub: %w", err)
 		}
 
-		fmt.Printf("Sleeping %d milliseconds...", delay)
-		time.Sleep(time.Duration(delay) * time.Millisecond)
+		delayMux.RLock()
+		d := delay
+		delayMux.RUnlock()
+
+		fmt.Printf("Sleeping %d milliseconds...", d)
+		time.Sleep(time.Duration(d) * time.Millisecond)
 	}
 }
 
