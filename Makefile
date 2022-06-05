@@ -48,6 +48,9 @@ ci-ihm:
 	sudo k3s ctr images import /tmp/iothubmqtt.dev.tar
 	sudo rm -f /tmp/iothubmqtt.dev.tar
 
+cd-ihm: ci-ihm
+	kubectl delete pod --selector app=iothubmqtt
+
 protos:
 	mkdir -p pkg/thprotos
 	protoc \
