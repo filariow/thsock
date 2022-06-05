@@ -92,6 +92,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 		log.Printf("Acked message %d", m.MessageID())
 
 		tr := fmt.Sprintf("$iothub/methods/res/200/?$rid=%d", m.MessageID())
+		log.Printf("Responding to message %d on topic '%s'", m.MessageID(), tr)
 		st := c.Publish(tr, 0, false, `{"status":"ok"}`)
 		<-st.Done()
 		if err := st.Error(); err != nil {
