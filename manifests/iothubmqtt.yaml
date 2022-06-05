@@ -32,14 +32,3 @@ spec:
                 name: iothub-password
             - configMapRef:
                 name: iothub-broker
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: iothubmqtt
-spec:
-  selector:
-    app: iothubmqtt
-  ports:
-    - protocol: TCP
-      port: 8080
