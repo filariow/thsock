@@ -91,7 +91,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 		log.Printf("Message received '%d' on topic %s: %s", m.MessageID(), m.Topic(), m.Payload())
 		m.Ack()
 		log.Printf("Acked message %d", m.MessageID())
-		rid := strings.Split("=", m.Topic())[1]
+		rid := strings.Split(m.Topic(), "=")[1]
 
 		tr := fmt.Sprintf("$iothub/methods/res/Success/?$rid=%s", rid)
 		log.Printf("Responding to message %d on topic '%s'", m.MessageID(), tr)
