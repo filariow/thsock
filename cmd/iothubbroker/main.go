@@ -103,7 +103,6 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 		if err := tkn.Error(); err != nil {
 			log.Fatalln(err)
 		}
-
 	})
 	if err := ihc.Connect(); err != nil {
 		return nil, err
