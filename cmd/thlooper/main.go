@@ -168,10 +168,10 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 				return
 			}
 
-			if data.THLooper != nil && data.THLooper.Delay != nil {
-				log.Printf("Setting delay time to %d ms", *data.THLooper.Delay)
+			if data.Delay != nil {
+				log.Printf("Setting delay time to %d ms", *data.Delay)
 				delayMux.Lock()
-				delay = *data.THLooper.Delay
+				delay = *data.Delay
 				delayMux.Unlock()
 			}
 		})
@@ -193,9 +193,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 }
 
 type ReportedPropertiesData struct {
-	THLooper *struct {
-		Delay *int `json:"delay"`
-	} `json:"thlooper"`
+	Delay *int `json:"delay"`
 }
 
 func respondToDirectMethodExecution(c mqtt.Client, rid string, status int, payload string) {
