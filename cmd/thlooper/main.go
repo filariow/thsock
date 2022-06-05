@@ -40,6 +40,15 @@ func run() error {
 		return fmt.Errorf("error creating client for IoT Hub Broker: %w", err)
 	}
 
+	cfg, err := loadMQTTClientConfig()
+	if err != nil {
+		return err
+	}
+
+	if _, err := setupMQTTClient(cfg); err != nil {
+		return err
+	}
+
 	for {
 		b, err := readSensor()
 		if err != nil {
