@@ -58,7 +58,7 @@ func startHTTPServer(ctx context.Context) {
 		w.Write([]byte(fmt.Sprintf(`{"message": "delay set to %d"}`, delay)))
 		return
 	})
-	srv := http.Server{Addr: "80", Handler: mux}
+	srv := http.Server{Addr: "8080", Handler: mux}
 	go func() {
 		<-ctx.Done()
 		srv.Close()
