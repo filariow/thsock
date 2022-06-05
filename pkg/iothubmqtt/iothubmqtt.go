@@ -13,6 +13,7 @@ type MQTTClient interface {
 	OnConnectionLost(func(mqtt.Client, error))
 	Connect() error
 	IsConnected() bool
+	Configuration() Config
 
 	Publish(topic, message string) error
 	Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token
@@ -30,6 +31,10 @@ type mqttClient struct {
 
 func (c *mqttClient) IsConnected() bool {
 	return c.client != nil
+}
+
+func (c *mqttClient) Configuration() Config {
+	return c.config
 }
 
 func (c *mqttClient) Configure() {

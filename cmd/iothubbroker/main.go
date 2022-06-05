@@ -19,19 +19,41 @@ func main() {
 }
 
 func run() error {
-	cfg, err := loadMQTTClientConfig()
+	ihc, err := setupMQTTClient()
 	if err != nil {
 		return err
 	}
 
-	ihc, err := setupMQTTClient(cfg)
+	configureHTTPServer(ihc)
+
+	p := "8080"
+	log.Printf("Serving on port: %s", p)
+	return http.ListenAndServe(":"+p, nil)
+}
+
+func setupMQTTClient() (iothubmqtt.MQTTClient, error) {
+	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error building configuration for MQTT Client: %w", err)
 	}
 
-	t := fmt.Sprintf("devices/%s/messages/events/$.ct=application%%2Fjson&$.ce=utf-8", cfg.ClientID)
+	ihc := iothubmqtt.NewMQTTClient(cfg)
 
+	ihc.Configure()
+	ihc.OnConnect(func(c mqtt.Client) { log.Println("MQTT Client connect") })
+
+	if err := ihc.Connect(); err != nil {
+		return nil, err
+	}
+
+	return ihc, nil
+}
+
+func configureHTTPServer(ihc iothubmqtt.MQTTClient) {
 	log.Println("Configuring HTTP server")
+
+	cfg := ihc.Configuration()
+	t := fmt.Sprintf("devices/%s/messages/events/$.ct=application%%2Fjson&$.ce=utf-8", cfg.ClientID)
 	http.HandleFunc("/event", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			m := fmt.Sprintf("Expected method %s, found: %s", http.MethodPost, r.Method)
@@ -63,30 +85,6 @@ func run() error {
 
 		w.WriteHeader(200)
 	})
-
-	p := "8080"
-	log.Printf("Serving on port: %s", p)
-	return http.ListenAndServe(":"+p, nil)
-}
-
-func loadMQTTClientConfig() (*iothubmqtt.Config, error) {
-	cfg, err := iothubmqtt.BuildConfigFromEnv("IOT_")
-	if err != nil {
-		return nil, fmt.Errorf("error building configuration for MQTT Client: %w", err)
-	}
-	return cfg, nil
-}
-
-func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
-	ihc := iothubmqtt.NewMQTTClient(cfg)
-
-	ihc.Configure()
-	ihc.OnConnect(func(c mqtt.Client) { log.Println("MQTT Client connect") })
-	if err := ihc.Connect(); err != nil {
-		return nil, err
-	}
-
-	return ihc, nil
 }
 
 func sendMessageToIoT(ihc iothubmqtt.MQTTClient, topic, msg string) error {
