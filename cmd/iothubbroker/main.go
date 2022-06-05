@@ -144,6 +144,7 @@ func executeDirectMethod(topic, payload string) (*directMethodResponse, error) {
 	}
 
 	u := path.Join(m.service, m.method)
+	log.Printf("Sending post request to %s", u)
 	r, err := http.Post(u, "application/json", strings.NewReader(payload))
 	if err != nil {
 		return &directMethodResponse{
