@@ -8,10 +8,13 @@ import (
 )
 
 type MQTTClient interface {
+	Configure()
+	OnConnect(func(mqtt.Client))
+	OnConnectionLost(func(mqtt.Client, error))
 	Connect() error
 	IsConnected() bool
-	Publish(topic, message string) error
 
+	Publish(topic, message string) error
 	Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token
 }
 
@@ -20,15 +23,16 @@ func NewMQTTClient(config *Config) MQTTClient {
 }
 
 type mqttClient struct {
-	config Config
-	client mqtt.Client
+	config            Config
+	client            mqtt.Client
+	mqttClientOptions *mqtt.ClientOptions
 }
 
 func (c *mqttClient) IsConnected() bool {
 	return c.client != nil
 }
 
-func (c *mqttClient) Connect() error {
+func (c *mqttClient) Configure() {
 	cfg := c.config
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tls://%s:%d", cfg.Broker, cfg.Port))
@@ -41,8 +45,19 @@ func (c *mqttClient) Connect() error {
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
 		log.Printf("MQTT Client lost connection to '%s': '%s'", cfg.Broker, err)
 	}
+	c.mqttClientOptions = opts
+}
 
-	client := mqtt.NewClient(opts)
+func (c *mqttClient) OnConnect(f func(mqtt.Client)) {
+	c.mqttClientOptions.OnConnect = f
+}
+
+func (c *mqttClient) OnConnectionLost(f func(mqtt.Client, error)) {
+	c.mqttClientOptions.OnConnectionLost = f
+}
+
+func (c *mqttClient) Connect() error {
+	client := mqtt.NewClient(c.mqttClientOptions)
 	// throw an error if the connection isn't successfull
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return fmt.Errorf("Failed to connect: %w", token.Error())
