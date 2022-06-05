@@ -132,26 +132,30 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 				return
 			}
 
-			var data SetDelayData
-			if err := json.Unmarshal(m.Payload(), &data); err != nil {
-				respondToDirectMethodExecution(c, t.rid, 400,
-					fmt.Sprintf(`{"error": "error parsing payload: %s"}`, err))
-				return
+			if t.method == "setDelay" {
+				log.Println("Invoked set delay")
+
+				var data SetDelayData
+				if err := json.Unmarshal(m.Payload(), &data); err != nil {
+					respondToDirectMethodExecution(c, t.rid, 400,
+						fmt.Sprintf(`{"error": "error parsing payload: %s"}`, err))
+					return
+				}
+
+				if minDelay := 1000; data.Delay < minDelay {
+					respondToDirectMethodExecution(c, t.rid, 400,
+						fmt.Sprintf(`{"error": "delay must be bigger than %d"}`, minDelay))
+					return
+				}
+
+				log.Printf("Setting delay time to %d ms", data.Delay)
+				delayMux.Lock()
+				delay = data.Delay
+				delayMux.Unlock()
+
+				msg := fmt.Sprintf(`{"message": "delay set to %d"}`, delay)
+				respondToDirectMethodExecution(c, t.rid, 200, msg)
 			}
-
-			if minDelay := 1000; data.Delay <= minDelay {
-				respondToDirectMethodExecution(c, t.rid, 400,
-					fmt.Sprintf(`{"error": "delay must be bigger than %d"}`, minDelay))
-				return
-			}
-
-			log.Printf("Setting delay time to %d ms", data.Delay)
-			delayMux.Lock()
-			delay = data.Delay
-			delayMux.Unlock()
-
-			msg := fmt.Sprintf(`{"message": "delay set to %d"}`, delay)
-			respondToDirectMethodExecution(c, t.rid, 200, msg)
 		})
 		tkn2 := ihc.Subscribe("$iothub/twin/PATCH/properties/desired/#", 0, func(c mqtt.Client, m mqtt.Message) {
 			log.Printf("processing message from topic '%s' for desired properties", m.Topic())
@@ -208,25 +212,23 @@ func respondToDirectMethodExecution(c mqtt.Client, rid string, status int, paylo
 }
 
 type directMethodData struct {
-	service string
-	method  string
-	rid     string
+	method string
+	rid    string
 }
 
 func parseTopic(topic string) (*directMethodData, error) {
-	rg := `^\$iothub\/methods\/POST\/([A-z]+)_([A-z]+)\/\?\$rid=([0-9]*)$`
+	rg := `^\$iothub\/methods\/POST\/([A-z]+)\/\?\$rid=([0-9]*)$`
 	re, err := regexp.Compile(rg)
 	if err != nil {
 		return nil, err
 	}
 	mm := re.FindSubmatch([]byte(topic))
-	if exp := 4; len(mm) != exp {
+	if exp := 3; len(mm) != exp {
 		return nil, fmt.Errorf("expected %d matches from topic '%s' and regexp '%s', found %d", exp, topic, rg, len(mm))
 	}
-	svc, meth, rid := mm[1], mm[2], mm[3]
+	meth, rid := mm[1], mm[2]
 	return &directMethodData{
-		service: string(svc) + ".default.svc.cluster.local:8080",
-		method:  string(meth),
-		rid:     string(rid),
+		method: string(meth),
+		rid:    string(rid),
 	}, nil
 }
