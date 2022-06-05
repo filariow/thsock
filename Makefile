@@ -48,6 +48,9 @@ ci-ihm:
 	sudo k3s ctr images import /tmp/iothubmqtt.dev.tar
 	sudo rm -f /tmp/iothubmqtt.dev.tar
 
+cd-thlooper: ci-thlooper
+	kubectl delete pod --selector app=thlooper
+
 cd-ihm: ci-ihm
 	kubectl delete pod --selector app=iothubmqtt
 
