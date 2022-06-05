@@ -143,7 +143,7 @@ func executeDirectMethod(topic, payload string) (*directMethodResponse, error) {
 		return nil, err
 	}
 
-	u := path.Join(m.service, m.method)
+	u := "http://" + path.Join(m.service, m.method)
 	log.Printf("Sending post request to %s", u)
 	r, err := http.Post(u, "application/json", strings.NewReader(payload))
 	if err != nil {
@@ -185,7 +185,7 @@ func parseTopic(topic string) (*directMethodData, error) {
 	}
 	svc, meth, rid := mm[1], mm[2], mm[3]
 	return &directMethodData{
-		service: string(svc) + ":8080",
+		service: string(svc) + ".default.svc.cluster.local:8080",
 		method:  string(meth),
 		rid:     string(rid),
 	}, nil
