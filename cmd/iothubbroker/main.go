@@ -134,7 +134,7 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 				r, err := http.Post(
 					"http://thlooper.default.svc.cluster.local:8080/setDelay",
 					"application/json",
-					strings.NewReader(fmt.Sprintf(`{"delay": %d}`, data.THLooper.Delay)))
+					strings.NewReader(fmt.Sprintf(`{"delay": %d}`, *data.THLooper.Delay)))
 				if err != nil {
 					log.Printf("error sending setDelay request to thlooper: %s", err)
 					return
