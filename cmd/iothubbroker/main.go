@@ -89,19 +89,17 @@ func setupMQTTClient(cfg *iothubmqtt.Config) (iothubmqtt.MQTTClient, error) {
 	log.Printf("Subscribing to direct method topic: %s", td)
 	tkn := ihc.Subscribe(td, 0, func(c mqtt.Client, m mqtt.Message) {
 		log.Printf("Message received '%d' on topic %s: %s", m.MessageID(), m.Topic(), m.Payload())
-		m.Ack()
-		log.Printf("Acked message %d", m.MessageID())
-		rid := strings.Split(m.Topic(), "=")[1]
 
+		rid := strings.Split(m.Topic(), "=")[1]
 		tr := fmt.Sprintf("$iothub/methods/res/200/?$rid=%s", rid)
 		log.Printf("Responding to message %d on topic '%s'", m.MessageID(), tr)
 		st := c.Publish(tr, 0, false, `{"status":"ok"}`)
 		<-st.Done()
 		if err := st.Error(); err != nil {
 			log.Println(err)
-		} else {
-			log.Printf("Response sent on topic %s", tr)
+			return
 		}
+		log.Printf("Response sent on topic %s", tr)
 	})
 	<-tkn.Done()
 	if err := tkn.Error(); err != nil {
