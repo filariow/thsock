@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,10 +18,52 @@ import (
 
 const SockAddr = "unix:/tmp/th.socket"
 
+var delay = 5000
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+type SetDelayData struct {
+	Delay int `json:"delay"`
+}
+
+func startHTTPServer(ctx context.Context) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/setDelay", func(w http.ResponseWriter, r *http.Request) {
+		bs, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(400)
+			w.Write([]byte(fmt.Sprintf(`{"error": "request body not valid: %s"}`, err.Error())))
+			return
+		}
+
+		var data SetDelayData
+		if err := json.Unmarshal(bs, &data); err != nil {
+			w.WriteHeader(400)
+			w.Write([]byte(fmt.Sprintf(`{"error": "request body not valid: %s"}`, err.Error())))
+			return
+		}
+
+		if minDelay := 1000; data.Delay <= minDelay {
+			w.WriteHeader(400)
+			w.Write([]byte(fmt.Sprintf(`{"error": "delay must be bigger than %d"}`, minDelay)))
+			return
+		}
+
+		delay = data.Delay
+		w.WriteHeader(200)
+		w.Write([]byte(fmt.Sprintf(`{"message": "delay set to %d"}`, delay)))
+		return
+	})
+	srv := http.Server{Addr: "80", Handler: mux}
+	go func() {
+		<-ctx.Done()
+		srv.Close()
+	}()
+	srv.ListenAndServe()
 }
 
 func run() error {
@@ -28,6 +72,9 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("error creating client for IoT Hub Broker: %w", err)
 	}
+
+	ctx := context.Background()
+	go startHTTPServer(ctx)
 
 	for {
 		b, err := readSensor()
