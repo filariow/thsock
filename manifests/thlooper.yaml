@@ -43,14 +43,3 @@ spec:
         - name: thsocket
           hostPath:
              path: /tmp/th.socket
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: thlooper
-spec:
-  selector:
-    app: thlooper
-  ports:
-    - protocol: TCP
-      port: 8080
