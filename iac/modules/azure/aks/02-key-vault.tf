@@ -7,7 +7,10 @@ resource "azurerm_key_vault" "aks_kv" {
   tenant_id                   = data.azurerm_client_config.current.tenant_id
   sku_name                    = "premium"
   enabled_for_disk_encryption = true
-  purge_protection_enabled    = true
+
+  #checkov:skip=CKV_AZURE_42:suppressing purge protection for development purposes
+  #checkov:skip=CKV_AZURE_110:suppressing purge protection for development purposes
+  purge_protection_enabled    = false
 
   network_acls {
     default_action = "Deny"
