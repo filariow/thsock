@@ -14,7 +14,7 @@ build-srv:
 		-trimpath \
 		-ldflags="-s -w" \
 		-o bin/thsock  \
-		cmd/usock/main.go
+		cmd/edge/usock/main.go
 
 ci-build-srv:
 	docker run --rm -it -v $(realpath .):/workspace -w /workspace  golang:1.18 make build-srv
@@ -28,7 +28,7 @@ build-ctl:
 		-trimpath \
 		-ldflags="-s -w" \
 		-o bin/thsampler \
-		cmd/thsampler/main.go
+		cmd/edge/thsampler/main.go
 
 ci-thsampler:
 	docker build -f deploy/thsampler/Dockerfile -t unina/thsampler:dev .
